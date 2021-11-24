@@ -1,0 +1,5 @@
+                usage='This script simply requires the name of the .xlsx file containing the ACL \
+                       request form as its lone argument and will print the ACL configuration to \
+                       the screen. Optionally, you may also specify an output file to send the \
+                       configuration to (in addition to the screen) and/or a worksheet name if \
+                       different than the default (\'ACL REQUEST FORM\').')
