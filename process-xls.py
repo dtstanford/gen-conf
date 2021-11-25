@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
  
 import argparse
+import ipaddress
 import os
+import re
 import sys
 import openpyxl
 
@@ -96,6 +98,17 @@ def try_load_worksheet(wb, ws_name, wb_name):
 def convert_alpha_to_num(letter):
     return ord(letter.lower()) - 96
 
+def parse_to_list(string):
+    split_string = re.split(r',|\n', string)
+    split_string[:] = [elem.strip() for elem in split_string]
+
+    return split_string
+
+def generate_objgrp_config(nets, nets_desc):
+    for net in nets:
+        net = ipaddress.IPv4Network(net)
+        net = net.hosts()[0] if net.prefixlen == 32 else net
+
 
 def main():
     args = parse_args()
@@ -109,15 +122,21 @@ def main():
     wb = try_load_workbook(file)
     ws = try_load_worksheet(wb, ws_name, file)
 
-    src_net_col = start_col
+    src_nets_col = start_col
     src_net_desc_col = start_col + 1
-    dest_net_col = start_col + 2
+    dest_nets_col = start_col + 2
     ip_proto_col = start_col + 4
-    ip_proto_port_col = start_col + 5
+    ip_proto_ports_col = start_col + 5
 
     for row in ws.iter_rows(min_col=start_col, min_row=start_row, values_only=True):
-        print(row[src_net_col - 1])
-        break
+        src_nets_cell = row[src_nets_col - 1]
+        src_net_desc_cell = row[src_net_desc_col - 1]
+        dest_nets_cell = row[dest_nets_col - 1]
+        ip_proto_cell = row[ip_proto_col - 1]
+        ip_proto_ports_cell = row[ip_proto_ports_col - 1]
+        
+        src_nets_cell = parse_to_list(src_nets_cell)
+        src_nets_objgrp_config = generate_objgrp_config(src_nets_cell, src_net_desc_cell)
 
 if __name__ == '__main__':
     main()
