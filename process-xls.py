@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
  
 import argparse
+from datetime import date
 import ipaddress
 import os
 import re
@@ -24,7 +25,7 @@ def parse_args():
     parser.add_argument('--sheet', type=str, help='The worksheet containing the ACL request form. \
                         (default: \'ACL REQUEST FORM\')', default=WS_NAME)
     parser.add_argument('--outfile', type=str, help='Write output to a file in addition to the \
-                        screen. (default: \'outfile.txt\')', default='outfile.txt')
+                        screen.')
     parser.add_argument('--start-cell', type=str, help='The upper-leftmost worksheet cell to \
                         begin processing ACL rules from (e.g., \'B4\'). (default: A3)',
                         default=START_CELL)
@@ -104,17 +105,58 @@ def parse_to_list(string):
 
     return split_string
 
-def generate_objgrp_config(nets, nets_desc):
-    for net in nets:
-        net = ipaddress.IPv4Network(net)
-        net = net.hosts()[0] if net.prefixlen == 32 else net
+def generate_net_desc(net_desc):
+    net_desc = net_desc[0:53]
+    net_desc = net_desc.replace(' ', '-')
+    todays_date = date.today().strftime('%m-%d-%Y')
+    net_desc = net_desc + '_' + todays_date
 
+    return net_desc
+
+
+def try_generate_net(net):
+    try:
+        net =ipaddress.IPv4Network(net)
+    except:
+        print()
+        print('There was an error attempting to process the host/network: {net}'.format(net=net))
+        print()
+
+        sys.exit(1)
+    
+    return net
+
+def generate_objgrp_config(nets, nets_desc):
+    host_list = []
+    net_list = []
+    
+    for net in nets:
+        net = try_generate_net(net)
+        if net.num_addresses == 1:
+            host = str(net.hosts()[0])
+            host_list.append(host)
+        else:
+            net = net.with_netmask.replace('/', ' ')
+            net_list.append(net)
+    
+    nets_desc = generate_net_desc(nets_desc)
+
+    objgrp_config = 'object-group network ' + nets_desc + '\n'
+    
+    for host in host_list:
+        objgrp_config += '  network-object host ' + host + '\n'
+    
+    for net in net_list:
+        objgrp_config += '  network-object ' + net + '\n'
+
+    return objgrp_config
 
 def main():
     args = parse_args()
     file = args.file
     acl = args.acl_name
     ws_name = args.sheet
+    outfile = args.outfile
     start_cell = validate_start_cell(args.start_cell)
     start_col = convert_alpha_to_num(start_cell[0])
     start_row = int(start_cell[1:])
@@ -137,6 +179,8 @@ def main():
         
         src_nets_cell = parse_to_list(src_nets_cell)
         src_nets_objgrp_config = generate_objgrp_config(src_nets_cell, src_net_desc_cell)
+
+        print(src_nets_objgrp_config)
 
 if __name__ == '__main__':
     main()
