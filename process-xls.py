@@ -15,6 +15,23 @@ START_CELL='A3'
 # Set some global vars
 CWD = os.getcwd()
 
+def print_notice():
+    notice =  '                                   *NOTICE*                                   \n'
+    notice += 'This script is intended to simplify the ACL change request process. However, \n'
+    notice += 'it is the user\'s responsibility to validate the configuration prior to final \n'
+    notice += 'implementation. USE WITH CAUTION.'
+
+    print()
+    print(notice)
+    print()
+    response = input('Continue? [Y/n]: ')
+    print()
+
+    if response == '' or response.lower() == 'y':
+        return
+    else:
+        sys.exit(0)
+
 def parse_args():
     parser = argparse.ArgumentParser(description='A command-line tool for Static1 processing of a \
         particular client\'s ACL request forms.',)
@@ -152,6 +169,7 @@ def generate_objgrp_config(nets, nets_desc):
     return objgrp_config
 
 def main():
+    print_notice()
     args = parse_args()
     file = args.file
     acl = args.acl_name
