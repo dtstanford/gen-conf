@@ -47,7 +47,7 @@ def parse_args():
                         begin processing ACL rules from (e.g., \'B4\'). (default: A3)',
                         default=START_CELL)
 
-    args = parser.parse_args(['eqfwchange.xlsx', 'aclname'])
+    args = parser.parse_args(['eqfwchange-1.xlsx', 'aclname'])
 
     return args
 
@@ -76,6 +76,50 @@ def validate_start_cell(start_cell):
         return start_cell
     else:
         error_and_exit()
+
+def validate_ip_protos(ip_protos):
+    validated_ip_protos = []
+
+    if 0 < len(ip_protos) < 3:
+        for ip_proto in ip_protos:
+            if ip_protos == 'tcp':
+                validated_ip_protos.append(ip_proto)
+            elif ip_proto == 'udp':
+                validated_ip_protos.append(ip_proto)
+            else:
+                print()
+                print('There was an error attempting to process the IP protocol: {ip_proto}'\
+                    .format(ip_proto=ip_proto))
+                print()
+
+                sys.exit(1)
+
+    return validated_ip_protos
+
+def validate_ip_protos_ports(ip_protos_ports):
+    validated_ip_protos_ports = []
+
+    for ip_protos_port in ip_protos_ports:
+        if ip_protos_port.isnumeric():
+            validated_ip_protos_ports.append(ip_protos_port)
+            continue
+        ip_protos_port_list = ip_protos_port.split('-')
+        if len(ip_protos_port_list) == 2:
+            ip_protos_port_list[:] = [ip_protos_port.strip() for ip_protos_port in \
+                ip_protos_port_list]
+            if ip_protos_port_list[0].isnumeric() and ip_protos_port_list[1].isnumeric():
+                if int(ip_protos_port_list[0]) < int(ip_protos_port_list[1]):
+                    validated_ip_protos_ports.append(ip_protos_port)
+                    continue
+        else:
+            print()
+            print('There was an error attempting to process the TCP and/or UDP port(s): {ports}'\
+                .format(ports=ip_protos_port))
+            print()
+
+            sys.exit(1)
+
+        return validated_ip_protos_ports
 
 def try_load_workbook(file):
     try:
@@ -130,7 +174,6 @@ def generate_net_desc(net_desc):
 
     return net_desc
 
-
 def try_generate_net(net):
     try:
         net =ipaddress.IPv4Network(net)
@@ -168,6 +211,52 @@ def generate_objgrp_config(nets, nets_desc):
 
     return objgrp_config
 
+def generate_acl_config(acl, dest_nets, ip_protos, ip_protos_ports, src_net_objgrp_name):
+    host_list = []
+    net_list = []
+    
+    for net in dest_nets:
+        net = try_generate_net(net)
+        if net.num_addresses == 1:
+            host = str(net.hosts()[0])
+            host_list.append(host)
+        else:
+            net = net.with_netmask.replace('/', ' ')
+            net_list.append(net)
+    
+    ip_protos = parse_to_list(ip_protos)
+    ip_protos = validate_ip_protos(ip_protos)
+    ip_protos_ports = parse_to_list(ip_protos_ports)
+    ip_protos_ports = validate_ip_protos_ports(ip_protos_ports)
+    objgrp = src_net_objgrp_name
+
+    acl_line_prefix = 'access-list {acl} line 1 extended permit '.format(acl=acl)
+    acl_config = ''
+
+    for ip_protos_port in ip_protos_ports:
+        if '-' in ip_protos_port:
+            ip_protos_port = ip_protos_port.replace('-', ' ')
+            port_arg = 'range'
+        else:
+            port_arg = 'eq'
+
+        for ip_proto in ip_protos:
+            if host_list:
+                for host in host_list:
+                    acl_config += acl_line_prefix \
+                                + '{proto} object-group {objgrp} host {host} {port_arg} {port}\n'\
+                                    .format(proto=ip_proto, objgrp=objgrp, host=host, 
+                                        port_arg=port_arg, port=ip_protos_port)
+            elif net_list:
+                for net in net_list:
+                    acl_config += acl_line_prefix \
+                                + '{proto} object-group {objgrp} {net} {port_arg} {port}\n'\
+                                    .format(proto=ip_proto, objgrp=objgrp, host=host, 
+                                        port_arg=port_arg, port=ip_protos_port)
+    
+    return acl_config
+
+
 def main():
     print_notice()
     args = parse_args()
@@ -185,20 +274,24 @@ def main():
     src_nets_col = start_col
     src_net_desc_col = start_col + 1
     dest_nets_col = start_col + 2
-    ip_proto_col = start_col + 4
-    ip_proto_ports_col = start_col + 5
+    ip_protos_col = start_col + 4
+    ip_protos_ports_col = start_col + 5
 
     for row in ws.iter_rows(min_col=start_col, min_row=start_row, values_only=True):
         src_nets_cell = row[src_nets_col - 1]
         src_net_desc_cell = row[src_net_desc_col - 1]
         dest_nets_cell = row[dest_nets_col - 1]
-        ip_proto_cell = row[ip_proto_col - 1]
-        ip_proto_ports_cell = row[ip_proto_ports_col - 1]
+        ip_protos_cell = row[ip_protos_col - 1]
+        ip_protos_ports_cell = row[ip_protos_ports_col - 1]
         
         src_nets_cell = parse_to_list(src_nets_cell)
         src_nets_objgrp_config = generate_objgrp_config(src_nets_cell, src_net_desc_cell)
+        src_net_objgrp_name = generate_net_desc(src_net_desc_cell)
+        acl_config = generate_acl_config(acl, dest_nets_cell, ip_protos_cell, 
+                        ip_protos_ports_cell, src_net_objgrp_name)
 
         print(src_nets_objgrp_config)
+        print(acl_config)
 
 if __name__ == '__main__':
     main()
