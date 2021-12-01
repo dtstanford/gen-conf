@@ -6,7 +6,11 @@ import ipaddress
 import os
 import re
 import sys
+import warnings
 import openpyxl
+
+# Filter out UserWarning warnings to prevent constant Data Validation errors
+warnings.filterwarnings('ignore', category=UserWarning, module='openpyxl')
 
 # Set some default global vars for use in argparse
 WS_NAME = 'ACL REQUEST FORM'
