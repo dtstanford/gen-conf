@@ -10,7 +10,9 @@ import openpyxl
 
 # Set some default global vars for use in argparse
 WS_NAME = 'ACL REQUEST FORM'
+VL_WS_NAME = 'Data'
 START_CELL='A3'
+VL_RETURN_COLS = [2, 3, 4]
 
 # Set some global vars
 CWD = os.getcwd()
@@ -41,13 +43,15 @@ def parse_args():
                         applied to.')
     parser.add_argument('--sheet', type=str, help='The worksheet containing the ACL request form. \
                         (default: \'ACL REQUEST FORM\')', default=WS_NAME)
+    parser.add_argument('--vl-sheet', type=str, help='The worksheet containing the VLOOKUP \
+                        referenced data. (default: \'Data\')', default=VL_WS_NAME)
     parser.add_argument('--outfile', type=str, help='Write output to a file in addition to the \
                         screen.')
     parser.add_argument('--start-cell', type=str, help='The upper-leftmost worksheet cell to \
                         begin processing ACL rules from (e.g., \'B4\'). (default: A3)',
                         default=START_CELL)
 
-    args = parser.parse_args(['eqfwchange-1.xlsx', 'aclname'])
+    args = parser.parse_args()
 
     return args
 
@@ -82,7 +86,7 @@ def validate_ip_protos(ip_protos):
 
     if 0 < len(ip_protos) < 3:
         for ip_proto in ip_protos:
-            if ip_protos == 'tcp':
+            if ip_proto == 'tcp':
                 validated_ip_protos.append(ip_proto)
             elif ip_proto == 'udp':
                 validated_ip_protos.append(ip_proto)
@@ -119,7 +123,7 @@ def validate_ip_protos_ports(ip_protos_ports):
 
             sys.exit(1)
 
-        return validated_ip_protos_ports
+    return validated_ip_protos_ports
 
 def try_load_workbook(file):
     try:
@@ -185,6 +189,16 @@ def try_generate_net(net):
         sys.exit(1)
     
     return net
+
+def vl_mapper(ws, index, return_cols):
+    for row in ws.iter_rows(values_only=True):
+        if index in row:
+            mapped_values = []
+            for col in return_cols:
+                mapped_values.append(str(row[col - 1]))
+            break
+
+    return mapped_values
 
 def generate_objgrp_config(nets, nets_desc):
     host_list = []
@@ -258,40 +272,61 @@ def generate_acl_config(acl, dest_nets, ip_protos, ip_protos_ports, src_net_objg
 
 
 def main():
-    print_notice()
     args = parse_args()
+    print_notice()
     file = args.file
     acl = args.acl_name
     ws_name = args.sheet
+    vl_ws_name = args.vl_sheet
     outfile = args.outfile
     start_cell = validate_start_cell(args.start_cell)
     start_col = convert_alpha_to_num(start_cell[0])
     start_row = int(start_cell[1:])
+    return_cols = VL_RETURN_COLS
 
     wb = try_load_workbook(file)
     ws = try_load_worksheet(wb, ws_name, file)
+    vl_ws = try_load_worksheet(wb, vl_ws_name, file)
 
     src_nets_col = start_col
     src_net_desc_col = start_col + 1
     dest_nets_col = start_col + 2
+    dest_nets_name_col = start_col + 3
     ip_protos_col = start_col + 4
     ip_protos_ports_col = start_col + 5
+
+    objgrp_config_chunks = set()
+    acl_config_chunks = set()
 
     for row in ws.iter_rows(min_col=start_col, min_row=start_row, values_only=True):
         src_nets_cell = row[src_nets_col - 1]
         src_net_desc_cell = row[src_net_desc_col - 1]
-        dest_nets_cell = row[dest_nets_col - 1]
-        ip_protos_cell = row[ip_protos_col - 1]
-        ip_protos_ports_cell = row[ip_protos_ports_col - 1]
+        dest_nets_name_cell = row[dest_nets_name_col - 1]
+
+        dest_nets_cell, ip_protos_cell, ip_protos_ports_cell = vl_mapper(vl_ws, 
+            dest_nets_name_cell, return_cols)
+#        ip_protos_cell = row[ip_protos_col - 1]
+#        ip_protos_ports_cell = row[ip_protos_ports_col - 1]
         
         src_nets_cell = parse_to_list(src_nets_cell)
+        dest_nets_cell = parse_to_list(dest_nets_cell)
         src_nets_objgrp_config = generate_objgrp_config(src_nets_cell, src_net_desc_cell)
         src_net_objgrp_name = generate_net_desc(src_net_desc_cell)
-        acl_config = generate_acl_config(acl, dest_nets_cell, ip_protos_cell, 
-                        ip_protos_ports_cell, src_net_objgrp_name)
 
-        print(src_nets_objgrp_config)
+        acl_config = generate_acl_config(acl, dest_nets_cell, ip_protos_cell, ip_protos_ports_cell,
+            src_net_objgrp_name)
+
+        objgrp_config_chunks.add(src_nets_objgrp_config)
+        acl_config_chunks.add(acl_config)
+
+    for objgrp_config in objgrp_config_chunks:
+        print(objgrp_config)
+
+    print()
+
+    for acl_config in acl_config_chunks:
         print(acl_config)
+
 
 if __name__ == '__main__':
     main()
