@@ -51,7 +51,7 @@ def parse_args():
                         begin processing ACL rules from (e.g., \'B4\'). (default: A3)',
                         default=START_CELL)
 
-    args = parser.parse_args()
+    args = parser.parse_args(['eqfwchange-1.xlsx', 'acl_in', '--outfile', 'output'])
 
     return args
 
@@ -214,7 +214,6 @@ def generate_objgrp_config(nets, nets_desc):
             net_list.append(net)
     
     nets_desc = generate_net_desc(nets_desc)
-
     objgrp_config = 'object-group network ' + nets_desc + '\n'
     
     for host in host_list:
@@ -259,13 +258,13 @@ def generate_acl_config(acl, dest_nets, ip_protos, ip_protos_ports, src_net_objg
                 for host in host_list:
                     acl_config += acl_line_prefix \
                                 + '{proto} object-group {objgrp} host {host} {port_arg} {port}\n'\
-                                    .format(proto=ip_proto, objgrp=objgrp, host=host, 
+                                    .format(proto=ip_proto, objgrp=objgrp, host=host,
                                         port_arg=port_arg, port=ip_protos_port)
-            elif net_list:
+            if net_list:
                 for net in net_list:
                     acl_config += acl_line_prefix \
                                 + '{proto} object-group {objgrp} {net} {port_arg} {port}\n'\
-                                    .format(proto=ip_proto, objgrp=objgrp, host=host, 
+                                    .format(proto=ip_proto, objgrp=objgrp, net=net, 
                                         port_arg=port_arg, port=ip_protos_port)
     
     return acl_config
@@ -290,10 +289,7 @@ def main():
 
     src_nets_col = start_col
     src_net_desc_col = start_col + 1
-    dest_nets_col = start_col + 2
     dest_nets_name_col = start_col + 3
-    ip_protos_col = start_col + 4
-    ip_protos_ports_col = start_col + 5
 
     objgrp_config_chunks = set()
     acl_config_chunks = set()
@@ -305,8 +301,6 @@ def main():
 
         dest_nets_cell, ip_protos_cell, ip_protos_ports_cell = vl_mapper(vl_ws, 
             dest_nets_name_cell, return_cols)
-#        ip_protos_cell = row[ip_protos_col - 1]
-#        ip_protos_ports_cell = row[ip_protos_ports_col - 1]
         
         src_nets_cell = parse_to_list(src_nets_cell)
         dest_nets_cell = parse_to_list(dest_nets_cell)
@@ -322,11 +316,19 @@ def main():
     for objgrp_config in objgrp_config_chunks:
         print(objgrp_config)
 
-    print()
-
     for acl_config in acl_config_chunks:
         print(acl_config)
+    
+    if outfile:
+        if not outfile.endswith('.txt'):
+            outfile = outfile + '.txt'
+        
+        with open(outfile, 'w') as file:
+            for objgrp_config in objgrp_config_chunks:
+                print(objgrp_config, file=file)
 
+            for acl_config in acl_config_chunks:
+                print(acl_config, file=file)
 
 if __name__ == '__main__':
     main()
