@@ -13,13 +13,13 @@ This script was written on Mac OS, but should still run on any operating system 
 and the required pip package(s) installed.
 
 ### Install Python
-Windows: https://www.python.org/downloads/release/python-3100/
+__Windows__: https://www.python.org/downloads/release/python-3100/
 
-Mac OS:
+__Mac OS__:
 
 Python 3 comes pre-installed on Mac OS. Confirm you have it in your system PATH:
 
-`which python3`
+`which python3`  
 `python3 -V`
 
 ### Install Git
@@ -38,6 +38,6 @@ Python 3 comes pre-installed on Mac OS. Confirm you have it in your system PATH:
 Example: `./gen-conf.py changes.xlsx outside_in_acl`
 
 ### Additional Options
-For a list of full options use the `-h` switch:
+For a list of full options, run the script using the `-h` (help) argument:
 
 Example: `./gen-conf.py -h`
