@@ -13,23 +13,35 @@ This script was written on Mac OS, but should still run on any operating system 
 and the required pip package(s) installed.
 
 ### Install Python
-__Windows__: https://www.python.org/downloads/release/python-3100/
+*Windows*: https://www.python.org/downloads/release/python-3100
 
-__Mac OS__:
+*Mac OS*:
 
 Python 3 comes pre-installed on Mac OS. Confirm you have it in your system PATH:
 
-`which python3`  
-`python3 -V`
+```
+which python3
+```
 
 ### Install Git
-(Needs to be populated...)
+*Windows*: https://git-scm.com/download/win
 
-### Download Script Repository
-(Needs to be populated...)
+*Mac OS*:  
+```
+xcode-select --install
+```
 
-### Install Required Python Package(s)
-`python3 -m pip install -r requirements.txt`
+### Download Script Repository  
+For both Windows and Mac OS:  
+```
+git clone https://github.com/dtstanford/gen-conf.git
+```
+
+### Install Required Python Package(s)  
+From within the script directory:  
+```
+python3 -m pip install -r requirements.txt
+```
 
 ## Running the Script
 1. Ensure you have your .xlsx file in the same directory as the script.
@@ -40,4 +52,45 @@ Example: `./gen-conf.py changes.xlsx outside_in_acl`
 ### Additional Options
 For a list of full options, run the script using the `-h` (help) argument:
 
-Example: `./gen-conf.py -h`
+```
+✗ ./gen-conf.py -h
+usage: gen-conf.py [-h] [--sheet SHEET] [--vl-sheet VL_SHEET] [--outfile OUTFILE] [--start-cell START_CELL] file acl_name
+
+A command-line tool for Static1 processing of a particular client's ACL request forms.
+
+positional arguments:
+  file                  The .xlsx file to be processed.
+  acl_name              The name of the firewall ACL this will be applied to.
+
+options:
+  -h, --help            show this help message and exit
+  --sheet SHEET         The worksheet containing the ACL request form. (default: 'ACL REQUEST FORM')
+  --vl-sheet VL_SHEET   The worksheet containing the VLOOKUP referenced data. (default: 'Data')
+  --outfile OUTFILE     Write output to a file in addition to the screen.
+  --start-cell START_CELL
+                        The upper-leftmost worksheet cell to begin processing ACL rules from (e.g., 'B4'). (default: A3)
+```
+
+### Example Output  
+```
+✗ ./gen-conf.py fw-changes-example.xlsx outside_acl_inbound
+
+                                ***NOTICE***
+This script is intended to simplify the ACL change request process. However,
+it is the user's responsibility to validate the configuration prior to final
+implementation. USE WITH CAUTION.
+
+Continue? [Y/n]: y
+------------------------------
+
+object-group network Big-Org-Initiators_12-02-2021
+  network-object host 10.12.158.186
+
+object-group network CompanyX-Clients_12-02-2021
+  network-object host 192.168.195.53
+  network-object 192.168.97.0 255.255.255.192
+
+access-list outside_acl_inbound line 1 extended permit tcp object-group CompanyX-Clients_12-02-2021 host 172.20.240.132 eq 22
+
+access-list outside_acl_inbound line 1 extended permit tcp object-group Big-Org-Initiators_12-02-2021 host 172.18.240.131 eq 22
+```

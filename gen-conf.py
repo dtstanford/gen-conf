@@ -22,7 +22,7 @@ VL_RETURN_COLS = [2, 3, 4]
 CWD = os.getcwd()
 
 def print_notice():
-    notice =  '                                   *NOTICE*                                   \n'
+    notice =  '                               ***NOTICE***\n'
     notice += 'This script is intended to simplify the ACL change request process. However, \n'
     notice += 'it is the user\'s responsibility to validate the configuration prior to final \n'
     notice += 'implementation. USE WITH CAUTION.'
@@ -31,6 +31,7 @@ def print_notice():
     print(notice)
     print()
     response = input('Continue? [Y/n]: ')
+    print('------------------------------')
     print()
 
     if response == '' or response.lower() == 'y':
