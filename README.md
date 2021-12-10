@@ -50,11 +50,11 @@ python3 -m pip install -r requirements.txt
 Example: `./gen-conf.py changes.xlsx outside_in_acl`
 
 ### Additional Options
-For a list of full options, run the script using the `-h` (help) argument:
+For a list of full options, run the script using the `--help` argument:
 
 ```
-✗ ./gen-conf.py -h
-usage: gen-conf.py [-h] [--sheet SHEET] [--vl-sheet VL_SHEET] [--outfile OUTFILE] [--start-cell START_CELL] file acl_name
+# ./gen-conf.py --help
+usage: gen-conf.py [-h] [--date DATE] [--sheet SHEET] [--vl-sheet VL_SHEET] [--outfile OUTFILE] [--start-cell START_CELL] file acl_name
 
 A command-line tool for Static1 processing of a particular client's ACL request forms.
 
@@ -64,6 +64,7 @@ positional arguments:
 
 options:
   -h, --help            show this help message and exit
+  --date DATE           The date used in object-group name configurations. Expected format: MMDDYYYY. (default: Today's date)
   --sheet SHEET         The worksheet containing the ACL request form. (default: 'ACL REQUEST FORM')
   --vl-sheet VL_SHEET   The worksheet containing the VLOOKUP referenced data. (default: 'Data')
   --outfile OUTFILE     Write output to a file in addition to the screen.
