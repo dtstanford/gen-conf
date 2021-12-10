@@ -73,24 +73,32 @@ options:
 
 ### Example Output  
 ```
-✗ ./gen-conf.py fw-changes-example.xlsx outside_acl_inbound
+# ./gen-conf.py fw-changes-example.xlsx outside_acl --date 01011970
 
-                                ***NOTICE***
+                               ***NOTICE***
 This script is intended to simplify the ACL change request process. However,
 it is the user's responsibility to validate the configuration prior to final
 implementation. USE WITH CAUTION.
 
-Continue? [Y/n]: y
+Continue? [Y/n]: Y
 ------------------------------
 
-object-group network Big-Org-Initiators_12-02-2021
-  network-object host 10.12.158.186
-
-object-group network CompanyX-Clients_12-02-2021
+object-group network CompanyX-Clients_01-01-1970
   network-object host 192.168.195.53
   network-object 192.168.97.0 255.255.255.192
 
-access-list outside_acl_inbound line 1 extended permit tcp object-group CompanyX-Clients_12-02-2021 host 172.20.240.132 eq 22
+object-group network Big-Org-Initiators_01-01-1970
+  network-object host 10.12.158.186
 
-access-list outside_acl_inbound line 1 extended permit tcp object-group Big-Org-Initiators_12-02-2021 host 172.18.240.131 eq 22
+access-list outside_acl line 1 extended permit tcp object-group CompanyX-Clients_01-01-1970 host 172.20.240.132 eq 22443
+
+access-list outside_acl line 1 extended permit tcp object-group Big-Org-Initiators_01-01-1970 host 172.18.240.131 eq 22
+access-list outside_acl line 1 extended permit tcp object-group Big-Org-Initiators_01-01-1970 host 172.18.240.131 range 500 599
+
+---- BACKOUT CONFIG ----
+no access-list outside_acl extended permit tcp object-group CompanyX-Clients_01-01-1970 host 172.20.240.132 eq 22443
+no access-list outside_acl extended permit tcp object-group Big-Org-Initiators_01-01-1970 host 172.18.240.131 eq 22
+no access-list outside_acl extended permit tcp object-group Big-Org-Initiators_01-01-1970 host 172.18.240.131 range 500 599
+no object-group network CompanyX-Clients_01-01-1970
+no object-group network Big-Org-Initiators_01-01-1970
 ```

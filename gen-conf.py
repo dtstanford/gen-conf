@@ -295,6 +295,33 @@ def generate_acl_config(acl, dest_nets, ip_protos, ip_protos_ports, src_net_objg
     
     return acl_config
 
+def generate_backout_config(*config_chunks_sets):
+    backout_config = '---- BACKOUT CONFIG ----\n'
+    acl_line_list = []
+    objgrp_line_list = []
+    config_chunks = set()
+    for config_chunk_set in config_chunks_sets:
+        config_chunks.update(config_chunk_set)
+
+    for chunk in config_chunks:
+        config_lines = chunk.splitlines()
+        for line in config_lines:
+            if line.startswith('access-list'):
+                line = line.replace('line 1 ', '')
+                acl_line_list.append(line)
+            elif line.startswith('object-group'):
+                objgrp_line_list.append(line)
+    
+    if acl_line_list:
+        for line in acl_line_list:
+            backout_config += 'no ' + line + '\n'
+
+    if objgrp_line_list:
+        for line in objgrp_line_list:
+            backout_config += 'no ' + line + '\n'
+    
+    return backout_config
+
 
 def main():
     args = parse_args()
@@ -346,7 +373,10 @@ def main():
 
     for acl_config in acl_config_chunks:
         print(acl_config)
-    
+
+    backout_config = generate_backout_config(objgrp_config_chunks, acl_config_chunks)
+    print(backout_config)
+
     if outfile:
         if not outfile.endswith('.txt'):
             outfile = outfile + '.txt'
@@ -357,6 +387,8 @@ def main():
 
             for acl_config in acl_config_chunks:
                 print(acl_config, file=file)
+            
+            print(backout_config)
 
 if __name__ == '__main__':
     main()
