@@ -58,7 +58,7 @@ def parse_args():
                         begin processing ACL rules from (e.g., \'B4\'). (default: A3)',
                         default=START_CELL)
 
-    args = parser.parse_args(['eqfwchange.xlsx', 'acl_out', '--date', 'ckdsjbdkhsjb'])
+    args = parser.parse_args()
 
     return args
 
