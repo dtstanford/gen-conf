@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
  
 import argparse
-from datetime import date
+from datetime import datetime
 import ipaddress
 import os
 import re
@@ -46,6 +46,8 @@ def parse_args():
     parser.add_argument('file', type=str, help='The .xlsx file to be processed.')
     parser.add_argument('acl_name', type=str, help='The name of the firewall ACL this will be \
                         applied to.')
+    parser.add_argument('--date', type=str, help='The date used in object-group name \
+                        configurations. Expected format: MMDDYYYY. (default: Today\'s date)')
     parser.add_argument('--sheet', type=str, help='The worksheet containing the ACL request form. \
                         (default: \'ACL REQUEST FORM\')', default=WS_NAME)
     parser.add_argument('--vl-sheet', type=str, help='The worksheet containing the VLOOKUP \
@@ -56,7 +58,7 @@ def parse_args():
                         begin processing ACL rules from (e.g., \'B4\'). (default: A3)',
                         default=START_CELL)
 
-    args = parser.parse_args()
+    args = parser.parse_args(['eqfwchange.xlsx', 'acl_out', '--date', 'ckdsjbdkhsjb'])
 
     return args
 
@@ -130,6 +132,20 @@ def validate_ip_protos_ports(ip_protos_ports):
 
     return validated_ip_protos_ports
 
+def try_generate_date(date_str):
+    try:
+        datetime_obj = datetime.strptime(date_str, '%m%d%Y')
+    except ValueError:
+        print()
+        print('The date supplied (\'{date}\') is not in the proper format.'.format(date=date_str))
+        print()
+        print('    VALID FORMAT: MMDDYYYY (e.g., \'01011970\')')
+        print()
+
+        sys.exit(1)
+    
+    return datetime_obj
+
 def try_load_workbook(file):
     try:
         wb = openpyxl.load_workbook(filename=file)
@@ -175,10 +191,15 @@ def parse_to_list(string):
 
     return split_string
 
-def generate_net_desc(net_desc):
+def generate_net_desc(net_desc, provided_date):
+    net_desc = re.sub('[()]', '', net_desc)
     net_desc = net_desc[0:53]
     net_desc = net_desc.replace(' ', '-')
-    todays_date = date.today().strftime('%m-%d-%Y')
+    if provided_date:
+        datetime_obj = try_generate_date(provided_date)
+        todays_date = datetime_obj.date().strftime('%m-%d-%Y')
+    else:
+        todays_date = datetime.today().strftime('%m-%d-%Y')
     net_desc = net_desc + '_' + todays_date
 
     return net_desc
@@ -205,7 +226,7 @@ def vl_mapper(ws, index, return_cols):
 
     return mapped_values
 
-def generate_objgrp_config(nets, nets_desc):
+def generate_objgrp_config(nets, nets_desc, provided_date):
     host_list = []
     net_list = []
     
@@ -218,7 +239,7 @@ def generate_objgrp_config(nets, nets_desc):
             net = net.with_netmask.replace('/', ' ')
             net_list.append(net)
     
-    nets_desc = generate_net_desc(nets_desc)
+    nets_desc = generate_net_desc(nets_desc, provided_date)
     objgrp_config = 'object-group network ' + nets_desc + '\n'
     
     for host in host_list:
@@ -280,6 +301,7 @@ def main():
     print_notice()
     file = args.file
     acl = args.acl_name
+    provided_date = args.date
     ws_name = args.sheet
     vl_ws_name = args.vl_sheet
     outfile = args.outfile
@@ -309,8 +331,9 @@ def main():
         
         src_nets_cell = parse_to_list(src_nets_cell)
         dest_nets_cell = parse_to_list(dest_nets_cell)
-        src_nets_objgrp_config = generate_objgrp_config(src_nets_cell, src_net_desc_cell)
-        src_net_objgrp_name = generate_net_desc(src_net_desc_cell)
+        src_nets_objgrp_config = generate_objgrp_config(src_nets_cell, src_net_desc_cell, 
+            provided_date)
+        src_net_objgrp_name = generate_net_desc(src_net_desc_cell, provided_date)
 
         acl_config = generate_acl_config(acl, dest_nets_cell, ip_protos_cell, ip_protos_ports_cell,
             src_net_objgrp_name)
