@@ -1,0 +1,139 @@
+object-group network Mizuho-Sec-ORG-ID-3518_12-18-2021
+  network-object host 210.162.178.153
+  network-object host 210.161.22.145
+  network-object host 210.162.178.145
+  network-object host 210.162.178.146
+  network-object host 210.161.22.140
+  network-object host 210.161.22.141
+
+object-group network SBI-ORG-ID-3377_12-18-2021
+  network-object host 118.159.231.230
+  network-object host 118.159.231.231
+  network-object host 103.71.158.33
+  network-object host 103.71.158.34
+
+object-group network Cantor-Org-ID-3388_12-18-2021
+  network-object host 148.106.154.38
+  network-object host 148.106.128.38
+
+object-group network Fidelity-ORG-157-and-ORG-6042_12-18-2021
+  network-object 192.223.236.128 255.255.255.128
+  network-object 192.223.136.0 255.255.255.240
+  network-object 192.223.241.16 255.255.255.240
+  network-object 192.223.242.16 255.255.255.240
+  network-object 103.26.72.112 255.255.255.240
+  network-object 103.26.73.112 255.255.255.240
+
+object-group network Capital-Group-Org-ID-3676_12-18-2021
+  network-object 148.107.0.0 255.255.0.0
+
+object-group network DL-SFTP-Account-"man"-Org-ID-3821_12-18-2021
+  network-object host 192.104.20.235
+
+object-group network Matsui-ORG-ID-6019_12-18-2021
+  network-object host 163.49.52.10
+  network-object host 163.49.52.11
+  network-object host 210.149.174.6
+  network-object host 210.149.174.7
+
+object-group network Standard-Chartered-Bank-ORG-ID-149_12-18-2021
+  network-object 165.225.196.0 255.255.254.0
+  network-object 165.225.198.0 255.255.254.0
+  network-object 166.81.38.0 255.255.255.0
+  network-object 147.161.224.0 255.255.254.0
+  network-object 147.161.226.0 255.255.254.0
+  network-object 147.161.228.0 255.255.254.0
+  network-object 147.161.230.0 255.255.254.0
+  network-object 147.161.232.0 255.255.254.0
+  network-object 147.161.234.0 255.255.254.0
+
+object-group network CANTOR_12-18-2021
+  network-object host 148.106.4.129
+  network-object host 148.106.4.228
+  network-object host 148.106.2.178
+
+object-group network ABSA-Bank-Limited-ORG-6016_12-18-2021
+  network-object 169.202.5.0 255.255.255.248
+  network-object 169.202.235.0 255.255.255.248
+  network-object 169.202.236.32 255.255.255.248
+  network-object 169.202.137.8 255.255.255.248
+  network-object 169.202.237.8 255.255.255.248
+
+access-list acl_outside line 1 extended permit tcp object-group SBI-ORG-ID-3377_12-18-2021 host 63.123.240.132 eq 22
+
+access-list acl_outside line 1 extended permit tcp object-group Mizuho-Sec-ORG-ID-3518_12-18-2021 host 63.123.240.105 eq 443
+
+access-list acl_outside line 1 extended permit tcp object-group Matsui-ORG-ID-6019_12-18-2021 host 63.123.240.104 range 443 444
+access-list acl_outside line 1 extended permit tcp object-group Matsui-ORG-ID-6019_12-18-2021 10.0.0.0 255.255.255.0 range 443 444
+access-list acl_outside line 1 extended permit udp object-group Matsui-ORG-ID-6019_12-18-2021 host 63.123.240.104 range 443 444
+access-list acl_outside line 1 extended permit udp object-group Matsui-ORG-ID-6019_12-18-2021 10.0.0.0 255.255.255.0 range 443 444
+access-list acl_outside line 1 extended permit tcp object-group Matsui-ORG-ID-6019_12-18-2021 host 63.123.240.104 eq 500
+access-list acl_outside line 1 extended permit tcp object-group Matsui-ORG-ID-6019_12-18-2021 10.0.0.0 255.255.255.0 eq 500
+access-list acl_outside line 1 extended permit udp object-group Matsui-ORG-ID-6019_12-18-2021 host 63.123.240.104 eq 500
+access-list acl_outside line 1 extended permit udp object-group Matsui-ORG-ID-6019_12-18-2021 10.0.0.0 255.255.255.0 eq 500
+
+access-list acl_outside line 1 extended permit tcp object-group Standard-Chartered-Bank-ORG-ID-149_12-18-2021 host 63.123.240.104 range 443 444
+access-list acl_outside line 1 extended permit tcp object-group Standard-Chartered-Bank-ORG-ID-149_12-18-2021 10.0.0.0 255.255.255.0 range 443 444
+access-list acl_outside line 1 extended permit udp object-group Standard-Chartered-Bank-ORG-ID-149_12-18-2021 host 63.123.240.104 range 443 444
+access-list acl_outside line 1 extended permit udp object-group Standard-Chartered-Bank-ORG-ID-149_12-18-2021 10.0.0.0 255.255.255.0 range 443 444
+access-list acl_outside line 1 extended permit tcp object-group Standard-Chartered-Bank-ORG-ID-149_12-18-2021 host 63.123.240.104 eq 500
+access-list acl_outside line 1 extended permit tcp object-group Standard-Chartered-Bank-ORG-ID-149_12-18-2021 10.0.0.0 255.255.255.0 eq 500
+access-list acl_outside line 1 extended permit udp object-group Standard-Chartered-Bank-ORG-ID-149_12-18-2021 host 63.123.240.104 eq 500
+access-list acl_outside line 1 extended permit udp object-group Standard-Chartered-Bank-ORG-ID-149_12-18-2021 10.0.0.0 255.255.255.0 eq 500
+
+access-list acl_outside line 1 extended permit tcp object-group Capital-Group-Org-ID-3676_12-18-2021 host 63.123.240.104 range 443 444
+access-list acl_outside line 1 extended permit tcp object-group Capital-Group-Org-ID-3676_12-18-2021 10.0.0.0 255.255.255.0 range 443 444
+access-list acl_outside line 1 extended permit udp object-group Capital-Group-Org-ID-3676_12-18-2021 host 63.123.240.104 range 443 444
+access-list acl_outside line 1 extended permit udp object-group Capital-Group-Org-ID-3676_12-18-2021 10.0.0.0 255.255.255.0 range 443 444
+access-list acl_outside line 1 extended permit tcp object-group Capital-Group-Org-ID-3676_12-18-2021 host 63.123.240.104 eq 500
+access-list acl_outside line 1 extended permit tcp object-group Capital-Group-Org-ID-3676_12-18-2021 10.0.0.0 255.255.255.0 eq 500
+access-list acl_outside line 1 extended permit udp object-group Capital-Group-Org-ID-3676_12-18-2021 host 63.123.240.104 eq 500
+access-list acl_outside line 1 extended permit udp object-group Capital-Group-Org-ID-3676_12-18-2021 10.0.0.0 255.255.255.0 eq 500
+
+access-list acl_outside line 1 extended permit tcp object-group DL-SFTP-Account-"man"-Org-ID-3821_12-18-2021 host 63.123.240.131 eq 22
+
+access-list acl_outside line 1 extended permit tcp object-group Matsui-ORG-ID-6019_12-18-2021 host 63.123.240.105 eq 443
+
+access-list acl_outside line 1 extended permit tcp object-group ABSA-Bank-Limited-ORG-6016_12-18-2021 host 63.123.240.104 range 443 444
+access-list acl_outside line 1 extended permit tcp object-group ABSA-Bank-Limited-ORG-6016_12-18-2021 10.0.0.0 255.255.255.0 range 443 444
+access-list acl_outside line 1 extended permit udp object-group ABSA-Bank-Limited-ORG-6016_12-18-2021 host 63.123.240.104 range 443 444
+access-list acl_outside line 1 extended permit udp object-group ABSA-Bank-Limited-ORG-6016_12-18-2021 10.0.0.0 255.255.255.0 range 443 444
+access-list acl_outside line 1 extended permit tcp object-group ABSA-Bank-Limited-ORG-6016_12-18-2021 host 63.123.240.104 eq 500
+access-list acl_outside line 1 extended permit tcp object-group ABSA-Bank-Limited-ORG-6016_12-18-2021 10.0.0.0 255.255.255.0 eq 500
+access-list acl_outside line 1 extended permit udp object-group ABSA-Bank-Limited-ORG-6016_12-18-2021 host 63.123.240.104 eq 500
+access-list acl_outside line 1 extended permit udp object-group ABSA-Bank-Limited-ORG-6016_12-18-2021 10.0.0.0 255.255.255.0 eq 500
+
+access-list acl_outside line 1 extended permit tcp object-group Cantor-Org-ID-3388_12-18-2021 host 63.123.240.110 eq 443
+
+access-list acl_outside line 1 extended permit tcp object-group Mizuho-Sec-ORG-ID-3518_12-18-2021 host 63.123.240.132 eq 22
+
+access-list acl_outside line 1 extended permit tcp object-group SBI-ORG-ID-3377_12-18-2021 host 63.123.240.131 eq 22
+
+access-list acl_outside line 1 extended permit tcp object-group SBI-ORG-ID-3377_12-18-2021 host 63.123.240.104 range 443 444
+access-list acl_outside line 1 extended permit tcp object-group SBI-ORG-ID-3377_12-18-2021 10.0.0.0 255.255.255.0 range 443 444
+access-list acl_outside line 1 extended permit udp object-group SBI-ORG-ID-3377_12-18-2021 host 63.123.240.104 range 443 444
+access-list acl_outside line 1 extended permit udp object-group SBI-ORG-ID-3377_12-18-2021 10.0.0.0 255.255.255.0 range 443 444
+access-list acl_outside line 1 extended permit tcp object-group SBI-ORG-ID-3377_12-18-2021 host 63.123.240.104 eq 500
+access-list acl_outside line 1 extended permit tcp object-group SBI-ORG-ID-3377_12-18-2021 10.0.0.0 255.255.255.0 eq 500
+access-list acl_outside line 1 extended permit udp object-group SBI-ORG-ID-3377_12-18-2021 host 63.123.240.104 eq 500
+access-list acl_outside line 1 extended permit udp object-group SBI-ORG-ID-3377_12-18-2021 10.0.0.0 255.255.255.0 eq 500
+
+access-list acl_outside line 1 extended permit tcp object-group SBI-ORG-ID-3377_12-18-2021 host 63.123.240.105 eq 443
+
+access-list acl_outside line 1 extended permit tcp object-group SBI-ORG-ID-3377_12-18-2021 host 63.123.240.110 eq 443
+
+access-list acl_outside line 1 extended permit tcp object-group CANTOR_12-18-2021 host 63.123.240.131 eq 22
+
+access-list acl_outside line 1 extended permit tcp object-group Cantor-Org-ID-3388_12-18-2021 host 63.123.240.104 range 443 444
+access-list acl_outside line 1 extended permit tcp object-group Cantor-Org-ID-3388_12-18-2021 10.0.0.0 255.255.255.0 range 443 444
+access-list acl_outside line 1 extended permit udp object-group Cantor-Org-ID-3388_12-18-2021 host 63.123.240.104 range 443 444
+access-list acl_outside line 1 extended permit udp object-group Cantor-Org-ID-3388_12-18-2021 10.0.0.0 255.255.255.0 range 443 444
+access-list acl_outside line 1 extended permit tcp object-group Cantor-Org-ID-3388_12-18-2021 host 63.123.240.104 eq 500
+access-list acl_outside line 1 extended permit tcp object-group Cantor-Org-ID-3388_12-18-2021 10.0.0.0 255.255.255.0 eq 500
+access-list acl_outside line 1 extended permit udp object-group Cantor-Org-ID-3388_12-18-2021 host 63.123.240.104 eq 500
+access-list acl_outside line 1 extended permit udp object-group Cantor-Org-ID-3388_12-18-2021 10.0.0.0 255.255.255.0 eq 500
+
+access-list acl_outside line 1 extended permit tcp object-group CANTOR_12-18-2021 host 63.123.240.132 eq 22
+
+access-list acl_outside line 1 extended permit tcp object-group Fidelity-ORG-157-and-ORG-6042_12-18-2021 host 63.123.240.131 eq 22
+

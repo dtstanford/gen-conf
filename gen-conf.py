@@ -388,7 +388,7 @@ def main():
             for acl_config in acl_config_chunks:
                 print(acl_config, file=file)
             
-            print(backout_config)
+            print(backout_config, file=file)
 
 if __name__ == '__main__':
     main()
